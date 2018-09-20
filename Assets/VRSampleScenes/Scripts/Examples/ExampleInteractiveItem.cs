@@ -9,6 +9,8 @@ namespace VRStandardAssets.Examples
     public class ExampleInteractiveItem : MonoBehaviour
     {
         public GameObject favelaShed;
+        public GameObject speakers;
+        public GameObject speakerspos;
         [SerializeField] private Material m_NormalMaterial;
         [SerializeField] private Material m_OverMaterial;
         [SerializeField] private Material m_ClickedMaterial;
@@ -16,26 +18,31 @@ namespace VRStandardAssets.Examples
         [SerializeField] private VRInteractiveItem m_InteractiveItem;
         [SerializeField] private Renderer m_Renderer;
 
-        int timer = 0;
+        public float timer = 0;
+        public float normalizedTime = 0;
+        Coroutine co;
         private void Awake()
         {
-
+            
             m_Renderer.material = m_NormalMaterial;
-        }
+        }   
         private IEnumerator Countdown()
         {
-            float duration = 3f; // 3 seconds you can change this 
+            float timer = 5f; // 3 seconds you can change this 
                                  //to whatever you want
-            float normalizedTime = 0;
+            normalizedTime = 0;
             while (normalizedTime <= 1f)
             {
-                normalizedTime += Time.deltaTime / duration;
+                normalizedTime += Time.deltaTime / timer;
                 yield return null;
             }
             Instantiate(favelaShed,this.gameObject.transform.position, Quaternion.identity);
+            Instantiate(speakers, speakerspos.gameObject.transform.position, Quaternion.identity);
+            Destroy(this.gameObject);
 
 
         }
+       
 
 
         private void OnEnable()
@@ -53,16 +60,19 @@ namespace VRStandardAssets.Examples
             m_InteractiveItem.OnOut -= HandleOut;
             m_InteractiveItem.OnClick -= HandleClick;
             m_InteractiveItem.OnDoubleClick -= HandleDoubleClick;
+            StopAllCoroutines();
+            normalizedTime = 0;
+
         }
 
 
         //Handle the Over event
         private void HandleOver()
         {
+            StartCoroutine(Countdown());
             Debug.Log("Show over state");
             Debug.Log(timer);
             m_Renderer.material = m_OverMaterial;
-            StartCoroutine(Countdown());
             //Destroy(this.gameObject);
 
         }
@@ -70,9 +80,13 @@ namespace VRStandardAssets.Examples
 
         //Handle the Out event
         private void HandleOut()
-        {   
+        {
+
+
             Debug.Log("Show out state");
             m_Renderer.material = m_NormalMaterial;
+            normalizedTime = 0;
+            StopAllCoroutines();
         }
 
 
